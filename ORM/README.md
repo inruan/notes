@@ -1,7 +1,5 @@
 # 数据库与Django ORM
 
-![链接](https://irutils.inruan.com/utils/qrcode?text=https://github.com/inruan/notes/tree/master/ORM)
-
 ## 数据库(Database)
 
 数据库就是存储数据的仓库，其本质是一个文件系统，数据按照特定的格式将数据存储起来，用户可以对数据库中的数据进行增加，修改，删除及查询操作。常见的关系型数据库(RDB)有:
@@ -272,3 +270,4 @@ print(Order.objects.filter().values(month=ExtractMonth('date')).order_by().annot
 
 
 
+![二维码](https://irutils.inruan.com/utils/qrcode?text=https://github.com/inruan/notes/tree/master/ORM)
