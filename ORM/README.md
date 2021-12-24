@@ -4,9 +4,9 @@
 
 数据库就是存储数据的仓库，其本质是一个文件系统，数据按照特定的格式将数据存储起来，用户可以对数据库中的数据进行增加，修改，删除及查询操作。常见的关系型数据库(RDB)有:
 
-* MySQL
-* PostgreSQL
-* SQLite/SQLite2
+* MySQL->MariaBD
+* PostgreSQL(C/S)
+* SQLite/SQLite2/SQLite3
 * Oracle
 * SQLServer
 * Access
@@ -30,7 +30,7 @@
 表定义:
 | 字段 | 名称 | 类型 |
 | --- | --- | --- |
-| Id | 用户ID | int |
+| id | 用户ID | int |
 | name | 姓名 | varchar(100) |
 | sex | 性别 | varchar(2) |
 | age | 年龄 | int |
@@ -46,10 +46,24 @@
 ### 约束
 
 * 主键约束（Primay Key Coustraint） 唯一性，非空性
+
 * 唯一约束 （Unique Counstraint）唯一性，可以空，但只能有一个
+
 * 检查约束 （Check Counstraint）对该列数据的范围、格式的限制（如：年龄、性别等）
+
 * 默认约束 （Default Counstraint）该数据的默认值
+
 * 外键约束 （Foreign Key Counstraint）需要建立两表间的关系并引用主表的列
+
+  
+
+### 索引
+
+  
+
+  
+
+  
 
 ### 实体-关系图(E-R图, Entity Relationship Diagram)
 
@@ -84,6 +98,9 @@ insert into user(`id`,`name`, `sex`, `age`) values (4, "赵六", "女", 40);
 
 -- 修改数据
 update user set `age`=50 where `id`=4;
+
+-- 删除数据
+delete from user where `id`=4;
 
 select * from user;	-- 查出所有用户
 select * from user order by age desc;	-- 查出所有用户，按年龄逆序
@@ -199,7 +216,7 @@ class Order(BaseModel):
 
 ```python
 
-from django.db.models.functions import ExtractMonth, ExtractDay, ExtractYear, TruncMonth, TruncDate, TruncYear
+from django.db.models.functions import ExtractMonth, ExtractDay, ExtractYear, TruncMonth, TruncDate, TruncYear, TruncMonth
 from django.db.models import Q, Sum, Count, Max, Min, Avg
 
 # 创建数据
@@ -216,7 +233,6 @@ Message(user_id=2, tag=Message.TAG_SYSTEM, content='你好!').save()
 
 Order(user_id=1, date='2020-01-01', totalprice=100).save()
 Order(user_id=2, date='2020-01-01', totalprice=200).save()
-Order(user_id=1, date='2020-03-01', totalprice=1100).save()
 Order(user_id=2, date='2021-05-01', totalprice=600).save()
 Order(user_id=3, date='2021-07-01', totalprice=785).save()
 Order(user_id=4, date='2021-10-01', totalprice=1125).save()
@@ -236,6 +252,7 @@ print(User.objects.filter().order_by().values_list('age', flat=True))  # 获取�
 print(User.objects.filter().count())  # 获取数量
 print(User.objects.filter().aggregate(ct=Count('id'), sage=Avg('age'), minage=Min('age'), maxage=Max('age')))  # 聚合统计
 print(User.objects.filter().values('age').order_by().annotate(ct=Count('id')))  # 按年龄分组
+print(User.objects.filter().values('sex').order_by().annotate(ct=Count('id'), aage=Avg('age')))  # 按性别分组
 print(User.objects.filter().values('sex', 'age').order_by().annotate(ct=Count('id')))  # 按性别、年龄分组
 
 # 消息相关
@@ -246,7 +263,7 @@ print(Message.objects.filter(isread=False).values('user__age', 'tag').order_by()
 
 # 订单相关
 # 按用户分组统计订单数、总金额、平均金额
-print(Order.objects.filter().values('user').order_by().annotate(ct=Count('id'), sumprice=Sum('totalprice'), avgprice=Max('totalprice')))
+print(Order.objects.filter().values('user').order_by().annotate(ct=Count('id'), sumprice=Sum('totalprice'), maxprice=Max('totalprice'), minprice=Min('totalprice'), avgprice=Avg('totalprice')))
 
 # 按日期统计订单数、总金额、平均金额
 print(Order.objects.filter().values('date').order_by().annotate(ct=Count('id'), sumprice=Sum('totalprice'), avgprice=Max('totalprice')))
@@ -258,13 +275,22 @@ print(Order.objects.filter().order_by().values_list('date', flat=True).distinct(
 print(Order.objects.filter().order_by().values(year=ExtractYear('date')).values_list('year', flat=True).distinct())
 
 # 按年份统计订单数、总金额、平均金额
-print(Order.objects.filter().values(year=ExtractYear('date')).order_by().annotate(ct=Count('id'), sumprice=Sum('totalprice'), avgprice=Max('totalprice')))
+print(Order.objects.filter().values(year=ExtractYear('date')).order_by().annotate(ct=Count('id'), sumprice=Sum('totalprice'), avgprice=Avg('totalprice')))
 
 # 按年月统计订单数、总金额、平均金额
-print(Order.objects.filter().values(datemonth=TruncMonth('date')).order_by().annotate(ct=Count('id'), sumprice=Sum('totalprice'), avgprice=Max('totalprice')))
+print(Order.objects.filter().values(datemonth=TruncMonth('date')).order_by().annotate(ct=Count('id'), sumprice=Sum('totalprice'), avgprice=Avg('totalprice')))
 
 # 按月份统计订单数、总金额、平均金额
-print(Order.objects.filter().values(month=ExtractMonth('date')).order_by().annotate(ct=Count('id'), sumprice=Sum('totalprice'), avgprice=Max('totalprice')))
+print(Order.objects.filter().values(month=ExtractMonth('date')).order_by().annotate(ct=Count('id'), sumprice=Sum('totalprice'), avgprice=Avg('totalprice')))
+
+
+# 只更新指定字段
+u = User.filter(id=1).first()
+u.age = 30
+u.save(update_fields=['age'])
+
+# 联查
+Order.objects.filter().select_related('user')
 
 ```
 
